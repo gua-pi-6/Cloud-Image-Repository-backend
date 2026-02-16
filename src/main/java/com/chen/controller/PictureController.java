@@ -200,33 +200,9 @@ public class PictureController {
         }
 
         // 查询数据库
-        String queryCondition = DigestUtil.md5Hex(JSONUtil.toJsonStr(pictureQueryRequest));
-        // 从本地缓存当中获取值
-        String localKey = LIST_PICTURE_VO_BY_PAGE_USING_CAFFEINE + queryCondition;
-        String localCache = caffeineManager.getFromLocalCache(localKey);
-        if(StrUtil.isNotBlank(localCache)){
-            Page<PictureVO> page = JSONUtil.toBean(localCache, Page.class);
-            if (Objects.nonNull(page)) {
-                return ResultUtils.success(page);
-            }
-        }
-        // 从redis当中获取值
-        String key = LIST_PICTURE_VO_BY_PAGE_USING_REDIS + queryCondition;
-        String cacheValue = stringRedisTemplate.opsForValue().get(key);
-        Page<PictureVO> page = null;
-        if (StrUtil.isNotBlank(cacheValue)){
-            page = JSONUtil.toBean(cacheValue, Page.class);
-        }
-        if (Objects.nonNull(page)){
-            return ResultUtils.success(page);
-        }
-
         Page<Picture> picturePage = pictureService.page(new Page<>(current, size),
                 pictureService.getQueryWrapper(pictureQueryRequest));
         Page<PictureVO> pictureVOPage = pictureService.getPictureVOPage(picturePage, request);
-        stringRedisTemplate.opsForValue().set(key, JSONUtil.toJsonStr(pictureVOPage), 30, TimeUnit.MINUTES);
-        // 向本地缓存当中写入值
-        caffeineManager.putToLocalCache(localKey, JSONUtil.toJsonStr(pictureVOPage));
         // 获取封装类
         return ResultUtils.success(pictureVOPage);
     }
