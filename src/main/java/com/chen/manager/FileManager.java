@@ -1,6 +1,5 @@
 package com.chen.manager;
 
-import cn.hutool.core.annotation.PropIgnore;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.NumberUtil;
@@ -9,7 +8,7 @@ import com.chen.config.CosClientConfig;
 import com.chen.exception.BusinessException;
 import com.chen.exception.ErrorCode;
 import com.chen.exception.ThrowUtils;
-import com.chen.model.dto.file.UploadPictureResult;
+import com.chen.model.result.file.UploadPictureResult;
 import com.qcloud.cos.model.PutObjectResult;
 import com.qcloud.cos.model.ciModel.persistence.ImageInfo;
 import lombok.extern.slf4j.Slf4j;

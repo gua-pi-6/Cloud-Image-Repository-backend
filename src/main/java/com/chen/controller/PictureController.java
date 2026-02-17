@@ -1,10 +1,12 @@
 package com.chen.controller;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.digest.DigestUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chen.annotation.AuthCheck;
+import com.chen.api.ImageSearchApiFacade;
 import com.chen.commom.BaseResponse;
 import com.chen.commom.DeleteRequest;
 import com.chen.commom.ResultUtils;
@@ -18,12 +20,14 @@ import com.chen.model.entity.Picture;
 import com.chen.model.entity.Space;
 import com.chen.model.entity.User;
 import com.chen.model.enums.PictureReviewStatusEnum;
+import com.chen.model.result.imagesearch.ImageSearchResult;
 import com.chen.model.vo.PictureTagCategory;
 import com.chen.model.vo.PictureVO;
 import com.chen.service.PictureService;
 import com.chen.service.SpaceService;
 import com.chen.service.UserService;
 
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
@@ -53,6 +57,20 @@ public class PictureController {
     private CaffeineManager caffeineManager;
     @Resource
     private SpaceService spaceService;
+    @Resource
+    private ImageSearchApiFacade imageSearchApiFacade;
+
+    @PostMapping("/search")
+    public BaseResponse<List<ImageSearchResult>> searchPictureByPicture(@RequestBody SearchPictureByPictureRequest requestParam) {
+        ThrowUtils.throwIf(ObjectUtil.isNull(requestParam), ErrorCode.PARAMS_ERROR);
+        Long pictureId = requestParam.getPictureId();
+        ThrowUtils.throwIf(ObjectUtil.isNull(pictureId) || pictureId <= 0, ErrorCode.PARAMS_ERROR);
+        Picture oldPicture = pictureService.getById(pictureId);
+        ThrowUtils.throwIf(ObjectUtil.isNull(oldPicture), ErrorCode.NOT_FOUND_ERROR);
+        List<ImageSearchResult> resultList = imageSearchApiFacade.searchImage(oldPicture.getName());
+        return ResultUtils.success(resultList);
+    }
+
 
     /**
      * 图片审核

@@ -14,7 +14,7 @@ import com.chen.manager.COSManager;
 import com.chen.manager.fileupload.PictureUpload;
 import com.chen.manager.fileupload.UrlPictureUpload;
 import com.chen.mapper.PictureMapper;
-import com.chen.model.dto.file.UploadPictureResult;
+import com.chen.model.result.file.UploadPictureResult;
 import com.chen.model.dto.picture.*;
 import com.chen.model.entity.Picture;
 import com.chen.model.entity.Space;
@@ -39,7 +39,6 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 

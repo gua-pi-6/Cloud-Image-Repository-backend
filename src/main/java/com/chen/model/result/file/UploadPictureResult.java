@@ -1,4 +1,4 @@
-package com.chen.model.dto.file;
+package com.chen.model.result.file;
 
 import lombok.Data;
 
