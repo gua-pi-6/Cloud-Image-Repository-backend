@@ -2,6 +2,7 @@ package com.chen.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.chen.api.aliyunai.model.response.CreateOutPaintingTaskResponse;
 import com.chen.model.dto.picture.*;
 import com.chen.model.entity.Picture;
 import com.chen.model.entity.User;
@@ -90,6 +91,8 @@ public interface PictureService extends IService<Picture> {
      * @param picture
      */
     void validPicture(Picture picture);
+
+    CreateOutPaintingTaskResponse createPictureOutPaintingTask(CreatePictureOutPaintingTaskRequest createPictureOutPaintingTaskRequest, User loginUser);
 
     void editPicture(PictureEditRequest pictureEditRequest, User loginUser);
 

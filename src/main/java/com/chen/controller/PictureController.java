@@ -7,6 +7,9 @@ import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chen.annotation.AuthCheck;
 import com.chen.api.ImageSearchApiFacade;
+import com.chen.api.aliyunai.AliYunAiApi;
+import com.chen.api.aliyunai.model.response.CreateOutPaintingTaskResponse;
+import com.chen.api.aliyunai.model.response.GetOutPaintingTaskResponse;
 import com.chen.commom.BaseResponse;
 import com.chen.commom.DeleteRequest;
 import com.chen.commom.ResultUtils;
@@ -59,6 +62,34 @@ public class PictureController {
     private SpaceService spaceService;
     @Resource
     private ImageSearchApiFacade imageSearchApiFacade;
+    @Resource
+    private AliYunAiApi aliYunAiApi;
+
+    /**
+     * 创建 AI 扩图任务
+     */
+    @PostMapping("/out_painting/create_task")
+    public BaseResponse<CreateOutPaintingTaskResponse> createPictureOutPaintingTask(
+            @RequestBody CreatePictureOutPaintingTaskRequest createPictureOutPaintingTaskRequest,
+            HttpServletRequest request) {
+        if (createPictureOutPaintingTaskRequest == null || createPictureOutPaintingTaskRequest.getPictureId() == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User loginUser = userService.getLoginUser(request);
+        CreateOutPaintingTaskResponse response = pictureService.createPictureOutPaintingTask(createPictureOutPaintingTaskRequest, loginUser);
+        return ResultUtils.success(response);
+    }
+
+    /**
+     * 查询 AI 扩图任务
+     */
+    @GetMapping("/out_painting/get_task")
+    public BaseResponse<GetOutPaintingTaskResponse> getPictureOutPaintingTask(String taskId) {
+        ThrowUtils.throwIf(StrUtil.isBlank(taskId), ErrorCode.PARAMS_ERROR);
+        GetOutPaintingTaskResponse task = aliYunAiApi.getOutPaintingTask(taskId);
+        return ResultUtils.success(task);
+    }
+
 
     @PostMapping("/search")
     public BaseResponse<List<ImageSearchResult>> searchPictureByPicture(@RequestBody SearchPictureByPictureRequest requestParam) {
