@@ -124,7 +124,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         // 校验权限
         checkPictureAuth(loginUser, oldPicture);
         // 开启事务
-        transactionTemplate.execute(status -> {
+        Boolean isSpacePicture = transactionTemplate.execute(status -> {
             // 操作数据库
             boolean result = this.removeById(pictureId);
             ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
@@ -138,19 +138,31 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
                         .update();
                 ThrowUtils.throwIf(!update, ErrorCode.OPERATION_ERROR, "额度更新失败");
             }
+
+            if (spaceId != null) {
+                this.clearPictureFile(oldPicture, "space");
+            }
             return true;
         });
         // 异步清理文件
-        this.clearPictureFile(oldPicture);
+        if (Boolean.FALSE.equals(isSpacePicture)) {
+            this.clearPictureFile(oldPicture, "public");
+        }
     }
 
-    private void clearPictureFile(Picture picture) {
+    private void clearPictureFile(Picture picture, String prefix) {
         String url = picture.getUrl();
         String thumbnailUrl = picture.getThumbnailUrl();
-        String key = url.substring(url.lastIndexOf("public"));
-        String key1 = thumbnailUrl.substring(thumbnailUrl.lastIndexOf("public"));
-        cosManager.deleteObject(key);
-        cosManager.deleteObject(key1);
+        int index = url.lastIndexOf(prefix);
+        int index1 = thumbnailUrl.lastIndexOf(prefix);
+        if (index != -1 && index1 != -1) {
+            String key = url.substring(index);
+            String key1 = thumbnailUrl.substring(index1);
+            cosManager.deleteObject(key);
+            cosManager.deleteObject(key1);
+        }else {
+            throw  new BusinessException(ErrorCode.NOT_FOUND_ERROR);
+        }
     }
 
 
