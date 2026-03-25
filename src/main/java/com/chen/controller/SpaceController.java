@@ -49,9 +49,10 @@ public class SpaceController {
      * @return
      */
     @PostMapping("/get/vo")
-    public BaseResponse<SpaceVO> getSpaceVo(HttpServletRequest request) {
+    public BaseResponse<SpaceVO> getSpaceVo(@RequestBody SpaceQueryRequest spaceQueryRequest, HttpServletRequest request) {
         Long userId = userService.getLoginUser(request).getId();
-        SpaceVO spaceVO = spaceService.getSpaceVoById(userId);
+        spaceQueryRequest.setUserId(userId);
+        SpaceVO spaceVO = spaceService.getSpaceVoById(spaceQueryRequest, request);
         return ResultUtils.success(spaceVO);
     }
 

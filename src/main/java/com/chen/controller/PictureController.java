@@ -18,6 +18,9 @@ import com.chen.exception.BusinessException;
 import com.chen.exception.ErrorCode;
 import com.chen.exception.ThrowUtils;
 import com.chen.manager.CaffeineManager;
+import com.chen.manager.auth.annotation.SaUserCheckPermission;
+import com.chen.manager.auth.core.StpKit;
+import com.chen.manager.auth.model.SpaceUserPermissionConstant;
 import com.chen.model.dto.picture.*;
 import com.chen.model.entity.Picture;
 import com.chen.model.entity.Space;
@@ -30,11 +33,14 @@ import com.chen.service.PictureService;
 import com.chen.service.SpaceService;
 import com.chen.service.UserService;
 
+import io.lettuce.core.RedisChannelHandler;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.RequestContext;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -69,6 +75,7 @@ public class PictureController {
      * 创建 AI 扩图任务
      */
     @PostMapping("/out_painting/create_task")
+    @SaUserCheckPermission(value = SpaceUserPermissionConstant.PICTURE_EDIT)
     public BaseResponse<CreateOutPaintingTaskResponse> createPictureOutPaintingTask(
             @RequestBody CreatePictureOutPaintingTaskRequest createPictureOutPaintingTaskRequest,
             HttpServletRequest request) {
@@ -137,6 +144,7 @@ public class PictureController {
      * 删除图片
      */
     @PostMapping("/delete")
+    @SaUserCheckPermission(value = SpaceUserPermissionConstant.PICTURE_DELETE)
     public BaseResponse<Boolean> deletePicture(@RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
         if (deleteRequest == null || deleteRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -200,8 +208,7 @@ public class PictureController {
         // 空间权限校验
         Long spaceId = picture.getSpaceId();
         if (spaceId != null) {
-            User loginUser = userService.getLoginUser(request);
-            pictureService.checkPictureAuth(loginUser, picture);
+            StpKit.SPACE.checkPermission(SpaceUserPermissionConstant.PICTURE_VIEW);
         }
         // 获取封装类
         return ResultUtils.success(pictureService.getPictureVO(picture, request));
@@ -239,15 +246,8 @@ public class PictureController {
             pictureQueryRequest.setReviewStatus(PictureReviewStatusEnum.PASS.getValue());
             pictureQueryRequest.setNullSpaceId(true);
         } else {
-            // 私有空间
-            User loginUser = userService.getLoginUser(request);
-            Space space = spaceService.getById(spaceId);
-            ThrowUtils.throwIf(space == null, ErrorCode.NOT_FOUND_ERROR, "空间不存在");
-            if (!loginUser.getId().equals(space.getUserId())) {
-                throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "没有空间权限");
-            }
+            StpKit.SPACE.checkPermission(SpaceUserPermissionConstant.PICTURE_VIEW);
         }
-
         // 查询数据库
         Page<Picture> picturePage = pictureService.page(new Page<>(current, size),
                 pictureService.getQueryWrapper(pictureQueryRequest));
@@ -260,6 +260,7 @@ public class PictureController {
      * 编辑图片（给用户使用）
      */
     @PostMapping("/edit")
+    @SaUserCheckPermission(value = SpaceUserPermissionConstant.PICTURE_EDIT)
     public BaseResponse<Boolean> editPicture(@RequestBody PictureEditRequest pictureEditRequest, HttpServletRequest request) {
         if (pictureEditRequest == null || pictureEditRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -274,6 +275,7 @@ public class PictureController {
      * 上传图片（可重新上传）
      */
     @PostMapping("/upload")
+    @SaUserCheckPermission(value = SpaceUserPermissionConstant.PICTURE_UPLOAD)
     public BaseResponse<PictureVO> uploadPicture(
             @RequestPart( name = "file", required = false) MultipartFile multipartFile,
             PictureUploadRequest pictureUploadRequest,

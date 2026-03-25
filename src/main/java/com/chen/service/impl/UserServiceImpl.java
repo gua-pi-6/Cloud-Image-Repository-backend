@@ -4,8 +4,10 @@ import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.chen.constant.UserConstant;
 import com.chen.exception.BusinessException;
 import com.chen.exception.ErrorCode;
+import com.chen.manager.auth.core.StpKit;
 import com.chen.model.dto.picture.PictureQueryRequest;
 import com.chen.model.dto.user.UserQueryRequest;
 import com.chen.model.entity.Picture;
@@ -84,6 +86,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         // 3. 记录用户的登录态
         request.getSession().setAttribute(USER_LOGIN_STATE, user);
+        StpKit.SPACE.login(user.getId());
+        StpKit.SPACE.getSession().set(USER_LOGIN_STATE, user);
         return this.getLoginUserVO(user);
     }
 

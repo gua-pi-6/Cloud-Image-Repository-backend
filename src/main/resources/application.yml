@@ -1,4 +1,31 @@
 spring:
+  # 空间图片分表
+  shardingsphere:
+    datasource:
+      names: shared_picture_platform
+      shared_picture_platform:
+        type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        url: jdbc:mysql://localhost:3306/shared_picture_platform
+        username: root
+        password: 88888888
+    rules:
+      sharding:
+        tables:
+          picture:
+            actual-data-nodes: shared_picture_platform.picture  # 动态分表
+            table-strategy:
+              standard:
+                sharding-column: spaceId
+                sharding-algorithm-name: picture_sharding_algorithm  # 使用自定义分片算法
+        sharding-algorithms:
+          picture_sharding_algorithm:
+            type: CLASS_BASED
+            props:
+              strategy: standard
+              algorithmClassName: com.chen.manager.sharding.PictureShardingAlgorithm
+    props:
+      sql-show: true
   session:
     store-type: redis
     timeout: 2592000
@@ -12,13 +39,6 @@ spring:
     port: 6379
     timeout: 5000
     username: default
-
-  # mysql
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/shared_picture_platform
-    username: root
-    password: 88888888
   # 运行环境
   profiles:
     active: local
@@ -43,6 +63,7 @@ mybatis-plus:
     # 开启日志输出
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   global-config:
+    enable-sql-runner: true
     db-config:
       logic-delete-field: isDelete # 删除字段
       logic-delete-value: 1 # 删除值
@@ -59,3 +80,8 @@ knife4j:
         api-rule: package
         api-rule-resources:
           - com.chen.controller
+sa-token:
+  # token 名称（同时也是 cookie 名称）
+  token-name: satoken
+  # token 有效期（单位：秒） 默认30天，-1 代表永久有效
+  timeout: 2592000
