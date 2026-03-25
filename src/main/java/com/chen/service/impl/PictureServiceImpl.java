@@ -345,7 +345,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         // 上传图片，得到信息
         // 按照用户 id 划分目录 => 按照空间划分目录
         String uploadPathPrefix;
-        if (spaceId == null) {
+        if (spaceId == null || spaceId == 0L) {
             uploadPathPrefix = String.format("public/%s", loginUser.getId());
         } else {
             uploadPathPrefix = String.format("space/%s", spaceId);
@@ -382,6 +382,9 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         // 开启事务
         Long finalSpaceId = spaceId;
         transactionTemplate.execute(status -> {
+            if (finalSpaceId == null) {
+                picture.setSpaceId(0L);
+            }
             boolean result = this.saveOrUpdate(picture);
             ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR, "图片上传失败");
             if (finalSpaceId != null) {
@@ -413,7 +416,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         Space space = null;
         if (spaceId != null) {
             space = spaceService.getById(spaceId);
-            if (space == null) {
+            if (space == null && spaceId != 0L) {
                 throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
             }
         }
@@ -447,7 +450,6 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         Long reviewerId = pictureQueryRequest.getReviewerId();
         String reviewMessage = pictureQueryRequest.getReviewMessage();
         Long spaceId = pictureQueryRequest.getSpaceId();
-        boolean nullSpaceId = pictureQueryRequest.isNullSpaceId();
         Date startEditTime = pictureQueryRequest.getStartEditTime();
         Date endEditTime = pictureQueryRequest.getEndEditTime();
 
@@ -472,8 +474,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         queryWrapper.eq(ObjUtil.isNotEmpty(reviewStatus), "reviewStatus", reviewStatus);
         queryWrapper.eq(ObjUtil.isNotEmpty(reviewerId), "reviewerId", reviewerId);
         queryWrapper.like(StrUtil.isNotBlank(reviewMessage), "reviewMessage", reviewMessage);
-        queryWrapper.eq(ObjUtil.isNotEmpty(spaceId) && spaceId > 0, "spaceId", spaceId);
-        queryWrapper.isNull(nullSpaceId, "spaceId");
+        queryWrapper.eq(ObjUtil.isNotEmpty(spaceId) && spaceId >= 0, "spaceId", spaceId);
         queryWrapper.ge(ObjUtil.isNotEmpty(startEditTime), "editTime", startEditTime);
         queryWrapper.le(ObjUtil.isNotEmpty(endEditTime), "editTime", endEditTime);
 

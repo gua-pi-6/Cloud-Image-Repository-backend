@@ -65,8 +65,8 @@ public class StpInterfaceImpl implements StpInterface {
         }
         List<String> adminPermissions = spaceUserAuthManager.getPermissionsByRole(SpaceRoleEnum.ADMIN.getValue());
         SpaceUserAuthContext spaceUserAuthContext = this.getAuthContextByRequest();
-        // 如果所有字段为空,视为查询公共图库,返回所有权限
-        if (BeanUtil.isEmpty(spaceUserAuthContext)) {
+        // 如果spaceId = 0,视为查询公共图库,返回所有权限
+        if (spaceUserAuthContext.getSpaceId() != null && spaceUserAuthContext.getSpaceId() == 0L) {
             return adminPermissions;
         }
         // 效验用户是否登录(获取用户id方便后续操作)
@@ -131,11 +131,11 @@ public class StpInterfaceImpl implements StpInterface {
                 throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
             }
             spaceId = picture.getSpaceId();
-            if (spaceId == null) {
+            if (spaceId == 0L) {
                 if (userId.equals(picture.getUserId()) || userService.isAdmin(user)) {
                     return adminPermissions;
                 } else {
-                    spaceUserAuthManager.getPermissionsByRole(SpaceRoleEnum.VIEWER.getValue());
+                    return spaceUserAuthManager.getPermissionsByRole(SpaceRoleEnum.VIEWER.getValue());
                 }
             }
             Space space = spaceService.getById(spaceId);
@@ -159,7 +159,7 @@ public class StpInterfaceImpl implements StpInterface {
                 return spaceUserAuthManager.getPermissionsByRole(loginSpaceUser.getSpaceRole());
             }
         }
-        return new ArrayList<>();
+        return adminPermissions;
     }
 
     /**
@@ -210,43 +210,5 @@ public class StpInterfaceImpl implements StpInterface {
         return authRequest;
     }
 
-
-    /**
-     * 从请求中获取上下文
-     */
-    private SpaceUserAuthContext getSpaceUserAuthContext() {
-        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-
-        SpaceUserAuthContext spaceUserAuthContext;
-
-        if ("GET".equals(request.getMethod())) {
-            // GET请求
-            Map<String, String> params = ServletUtil.getParamMap(request);
-            spaceUserAuthContext = BeanUtil.copyProperties(params, SpaceUserAuthContext.class);
-        } else {
-            // POST请求
-            Object cachedBody = request.getAttribute("cachedRequestBody");
-            String body;
-            if (cachedBody instanceof String) {
-                body = (String) cachedBody;
-            } else {
-                body = ServletUtil.getBody(request);
-            }
-            spaceUserAuthContext = JSONUtil.toBean(body, SpaceUserAuthContext.class);
-        }
-        // 从请求路径中提取模块类型
-        String requestURI = request.getRequestURI();
-        String moduleType = StrUtil.subBetween(requestURI, contextPath + "/", "/");
-
-        switch (moduleType) {
-            case "user" -> spaceUserAuthContext.setUserId(spaceUserAuthContext.getId());
-            case "space" -> spaceUserAuthContext.setSpaceId(spaceUserAuthContext.getId());
-            case "picture" -> spaceUserAuthContext.setPictureId(spaceUserAuthContext.getId());
-            case "spaceUser" -> spaceUserAuthContext.setSpaceUserId(spaceUserAuthContext.getId());
-            default -> throw new BusinessException(ErrorCode.PARAMS_ERROR, "未知模块类型: " + moduleType);
-        }
-
-        return spaceUserAuthContext;
-    }
 
 }
