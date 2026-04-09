@@ -2,18 +2,18 @@ spring:
   # 空间图片分表
   shardingsphere:
     datasource:
-      names: shared_picture_platform
-      shared_picture_platform:
+      names: <database-name>
+      <database-name>:
         type: com.zaxxer.hikari.HikariDataSource
         driver-class-name: com.mysql.cj.jdbc.Driver
-        url: jdbc:mysql://localhost:3306/shared_picture_platform
-        username: root
-        password: 88888888
+        url: jdbc:mysql://localhost:3306/<your-database-name>
+        username: <username>
+        password: <password>
     rules:
       sharding:
         tables:
           picture:
-            actual-data-nodes: shared_picture_platform.picture  # 动态分表
+            actual-data-nodes: <your-database-name.your-table>  # 动态分表
             table-strategy:
               standard:
                 sharding-column: spaceId
@@ -35,10 +35,10 @@ spring:
   redis:
     database: 0
     host: 127.0.0.1
-    password: 1234
     port: 6379
     timeout: 5000
     username: default
+    password: <your-redis-password>
   # 运行环境
   profiles:
     active: local
@@ -85,3 +85,19 @@ sa-token:
   token-name: satoken
   # token 有效期（单位：秒） 默认30天，-1 代表永久有效
   timeout: 2592000
+
+pexels:
+  API_KEY: <your-pexels-api-key>
+baidu:
+  BAIDU_APP_ID: <your-baidu-app-id>
+  BAIDU_API_KEY: <your-baidu-api-key>
+cos:
+  client:
+    host: <your-cos-endpoint>
+    secretId: <your-cos-secret-id>
+    secretKey: <your-cos-secret-key>
+    region: <your-cos-region>
+    bucket: <your-cos-bucket>
+# 阿里云 AI 配置
+aliYunAi:
+  apiKey: <your-aliyun-ai-api-key>
