@@ -14,6 +14,8 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * 图片(Picture)表服务接口
  *
+ * <p>协同编辑场景主要依赖它提供图片存在性校验与基础读取能力。
+ *
  * @author makejava
  * @since 2026-01-19 18:09:45
  */

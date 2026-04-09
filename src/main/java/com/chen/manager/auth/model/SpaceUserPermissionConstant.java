@@ -17,7 +17,9 @@ public interface SpaceUserPermissionConstant {
     String PICTURE_UPLOAD = "picture:upload";
 
     /**
-     * 图片编辑权限
+     * 图片编辑权限。
+     *
+     * <p>协同编辑 WebSocket 握手阶段会用它判断当前用户是否允许进入协同房间。
      */
     String PICTURE_EDIT = "picture:edit";
 

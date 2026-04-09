@@ -14,6 +14,8 @@ import java.util.List;
 /**
  * 用户(User)表服务接口
  *
+ * <p>协同编辑只依赖这里的一个能力：判断当前登录用户是否为管理员。
+ *
  * @author makejava
  * @since 2025-12-28 21:49:56
  */

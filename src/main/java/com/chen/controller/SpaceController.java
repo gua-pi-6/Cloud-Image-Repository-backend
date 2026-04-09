@@ -57,7 +57,7 @@ public class SpaceController {
     }
 
     /**
-     * 创建用户私人空间
+     * 创建用户空间 (私人空间, 团队空间)
      * @param spaceAddRequest
      * @return
      */

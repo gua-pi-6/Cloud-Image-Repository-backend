@@ -18,7 +18,9 @@ public class StpKit {
     public static final String SPACE_TYPE= "space";
 
     /**
-     * space 会话对象 (区分公共图库,私人空间和团队空间,并对团队空间中的成员进行权限管理)
+     * space 会话对象 (区分公共图库,私人空间和团队空间,并对团队空间中的成员进行权限管理)。
+     *
+     * <p>图片协同握手会通过它解析 token，确保权限模型和空间业务保持一致。
      */
     public static final StpLogic SPACE = new StpLogic(SPACE_TYPE);
 

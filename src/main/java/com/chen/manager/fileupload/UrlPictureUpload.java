@@ -72,6 +72,6 @@ public class UrlPictureUpload extends PictureUploadTemplate {
         }
 
         final long ONE_M = 1024 * 1024L;
-        ThrowUtils.throwIf(fileSize > 2 * ONE_M, ErrorCode.PARAMS_ERROR, "文件大小不能超过 2M");
+        ThrowUtils.throwIf(fileSize > 10 * ONE_M, ErrorCode.PARAMS_ERROR, "文件大小不能超过 10M");
     }
 }

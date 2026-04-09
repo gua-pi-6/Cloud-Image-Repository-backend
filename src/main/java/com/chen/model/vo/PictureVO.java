@@ -6,144 +6,97 @@ import lombok.Data;
 import org.springframework.beans.BeanUtils;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 @Data
 public class PictureVO implements Serializable {
-  
-    /**  
-     * id  
-     */  
+
+    /** id */
     private Long id;
 
-    /**
-     * 权限列表
-     */
+    /** permission list */
     private List<String> permissionList = new ArrayList<>();
 
+    /** picture url */
+    private String url;
 
-    /**  
-     * 图片 url  
-     */  
-    private String url;  
-  
-    /**  
-     * 图片名称  
-     */  
-    private String name;  
-  
-    /**  
-     * 简介  
-     */  
-    private String introduction;  
-  
-    /**  
-     * 标签  
-     */  
+    /** picture name */
+    private String name;
+
+    /** introduction */
+    private String introduction;
+
+    /** tags */
     private List<String> tags;
-  
-    /**  
-     * 分类  
-     */  
-    private String category;  
-  
-    /**  
-     * 文件体积  
-     */  
-    private Long picSize;  
-  
-    /**  
-     * 图片宽度  
-     */  
-    private Integer picWidth;  
-  
-    /**  
-     * 图片高度  
-     */  
-    private Integer picHeight;  
-  
-    /**  
-     * 图片比例  
-     */  
-    private Double picScale;  
-  
-    /**  
-     * 图片格式  
-     */  
-    private String picFormat;  
-  
-    /**  
-     * 用户 id  
-     */  
-    private Long userId;  
-  
-    /**  
-     * 创建时间  
-     */  
+
+    /** category */
+    private String category;
+
+    /** file size */
+    private Long picSize;
+
+    /** width */
+    private Integer picWidth;
+
+    /** height */
+    private Integer picHeight;
+
+    /** ratio */
+    private Double picScale;
+
+    /** format */
+    private String picFormat;
+
+    /** creator id */
+    private Long userId;
+
+    /** create time */
     private Date createTime;
-  
-    /**  
-     * 编辑时间  
-     */  
+
+    /** edit time */
     private Date editTime;
-  
-    /**  
-     * 更新时间  
-     */  
-    private Date updateTime;  
-  
-    /**  
-     * 创建用户信息  
-     */  
+
+    /** update time */
+    private Date updateTime;
+
+    /** creator info */
     private UserVO user;
 
-    /**
-     * 缩略图 url
-     */
+    /** thumbnail url */
     private String thumbnailUrl;
 
-    /**
-     * 空间 id
-     */
+    /** space id (0 means public gallery) */
     private Long spaceId;
 
-    /**
-     * 状态：0-待审核; 1-通过; 2-拒绝
-     */
+    /** 0 private, 1 team, null for public */
+    private Integer spaceType;
+
+    /** review status */
     private Integer reviewStatus;
 
+    private static final long serialVersionUID = 1L;
 
-
-    private static final long serialVersionUID = 1L;  
-  
-    /**  
-     * 封装类转对象  
-     */  
+    /** VO -> entity */
     public static Picture voToObj(PictureVO pictureVO) {
-        if (pictureVO == null) {  
-            return null;  
-        }  
-        Picture picture = new Picture();  
+        if (pictureVO == null) {
+            return null;
+        }
+        Picture picture = new Picture();
         BeanUtils.copyProperties(pictureVO, picture);
-        // 类型不同，需要转换  
         picture.setTags(JSONUtil.toJsonStr(pictureVO.getTags()));
-        return picture;  
-    }  
-  
-    /**  
-     * 对象转封装类  
-     */  
-    public static PictureVO objToVo(Picture picture) {  
-        if (picture == null) {  
-            return null;  
-        }  
-        PictureVO pictureVO = new PictureVO();  
-        BeanUtils.copyProperties(picture, pictureVO);  
-        // 类型不同，需要转换  
-        pictureVO.setTags(JSONUtil.toList(picture.getTags(), String.class));  
-        return pictureVO;  
-    }  
+        return picture;
+    }
+
+    /** entity -> VO */
+    public static PictureVO objToVo(Picture picture) {
+        if (picture == null) {
+            return null;
+        }
+        PictureVO pictureVO = new PictureVO();
+        BeanUtils.copyProperties(picture, pictureVO);
+        pictureVO.setTags(JSONUtil.toList(picture.getTags(), String.class));
+        return pictureVO;
+    }
 }

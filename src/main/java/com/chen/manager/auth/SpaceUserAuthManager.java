@@ -32,6 +32,12 @@ import java.util.List;
 import java.util.Map;
 
 @Component
+/**
+ * 空间成员权限管理器。
+ *
+ * <p>协同编辑握手阶段会复用这里的权限判断逻辑，
+ * 尤其是团队空间下的 picture:edit 权限判定。
+ */
 public class SpaceUserAuthManager {
 
     @Resource
@@ -48,6 +54,9 @@ public class SpaceUserAuthManager {
         SPACE_USER_AUTH_CONFIG = JSONUtil.toBean(json, SpaceUserAuthConfig.class);
     }
 
+    /**
+     * 根据“空间类型 + 用户在空间中的角色”推导权限列表。
+     */
     public List<String> getPermissionList(Space space, User loginUser) {
         if (loginUser == null) {
             return new ArrayList<>();

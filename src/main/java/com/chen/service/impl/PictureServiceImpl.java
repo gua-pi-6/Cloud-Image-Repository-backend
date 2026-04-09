@@ -6,6 +6,8 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chen.api.aliyunai.AliYunAiApi;
@@ -292,6 +294,11 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
                 user = userIdUserListMap.get(userId).get(0);
             }
             pictureVO.setUser(userService.getUserVO(user));
+            Long currentSpaceId = pictureVO.getSpaceId();
+            if (currentSpaceId != null && currentSpaceId > 0) {
+                Space currentSpace = spaceService.getById(currentSpaceId);
+                pictureVO.setSpaceType(currentSpace == null ? null : currentSpace.getSpaceType());
+            }
         });
         pictureVOPage.setRecords(pictureVOList);
         return pictureVOPage;
@@ -305,7 +312,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         ThrowUtils.throwIf(loginUser == null, ErrorCode.NO_AUTH_ERROR);
         // 空间权限校验
         Long spaceId = pictureUploadRequest.getSpaceId();
-        if (spaceId != null) {
+        if (spaceId != null && spaceId != 0L) {
             Space space = spaceService.getById(spaceId);
             ThrowUtils.throwIf(space == null, ErrorCode.NOT_FOUND_ERROR, "空间不存在");
             // 校验额度
@@ -381,13 +388,24 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         }
         // 开启事务
         Long finalSpaceId = spaceId;
+        Long finalPictureId = pictureId;
         transactionTemplate.execute(status -> {
             if (finalSpaceId == null) {
                 picture.setSpaceId(0L);
             }
-            boolean result = this.saveOrUpdate(picture);
+            boolean result = false;
+            if (finalPictureId != null) {
+                // 更新图片信息
+                LambdaUpdateWrapper<Picture> updateWrapper = new LambdaUpdateWrapper<Picture>()
+                        .eq(Picture::getId, finalPictureId)
+                        .eq(Picture::getSpaceId, finalSpaceId);
+                result = this.update(picture ,updateWrapper);
+            } else {
+                // 添加图片信息
+                result = this.save(picture);
+            }
             ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR, "图片上传失败");
-            if (finalSpaceId != null) {
+            if (finalSpaceId != null && finalSpaceId != 0L) {
                 boolean update = spaceService.lambdaUpdate()
                         .eq(Space::getId, finalSpaceId)
                         .setSql("totalSize = totalSize + " + picture.getPicSize())
@@ -422,6 +440,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         }
         List<String> permissionList = spaceUserAuthManager.getPermissionList(space, userService.getLoginUser(request));
         pictureVO.setPermissionList(permissionList);
+        pictureVO.setSpaceType(space == null ? null : space.getSpaceType());
         return pictureVO;
     }
 
